@@ -1,66 +1,61 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./../middleware/jwt.middleware.js');
-const User = require("../models/User.model");
-const Income = require("../models/Income.model");
+const Expense = require("../models/Expense.model");
 
-// GET /income: Get all income entries for the logged-in user
+
 router.get('/', isAuthenticated, (req, res, next) => {
-  Income.find({ userId: req.payload._id })
-    .then(incomes => res.status(200).json(incomes))
+  Expense.find({ userId: req.payload._id })
+    .then(expenses => res.status(200).json(expenses))
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
-// POST /income: Create a new income entry
 router.post('/', isAuthenticated, (req, res, next) => {
   const { category, amount, date, currency, description } = req.body;
   const userId = req.payload._id;
 
-  Income.create({ category, amount, date, currency, description, userId })
-    .then(income => res.status(201).json(income))
+  Expense.create({ category, amount, date, currency, description, userId })
+    .then(expense => res.status(201).json(expense))
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
-// GET /income/:id: Get a specific income entry
 router.get('/:id', isAuthenticated, (req, res, next) => {
-  Income.findOne({ _id: req.params.id, userId: req.payload._id })
-    .then(income => {
-      if (!income) {
-        res.status(404).json({ message: "Income not found" });
+  Expense.findOne({ _id: req.params.id, userId: req.payload._id })
+    .then(expense => {
+      if (!expense) {
+        res.status(404).json({ message: "Expense not found" });
       } else {
-        res.status(200).json(income);
+        res.status(200).json(expense);
       }
     })
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
-// PUT /income/:id: Update a specific income entry
 router.put('/:id', isAuthenticated, (req, res, next) => {
   const { category, amount, date, currency, description } = req.body;
 
-  Income.findOneAndUpdate(
+  Expense.findOneAndUpdate(
     { _id: req.params.id, userId: req.payload._id },
     { category, amount, date, currency, description },
-    { new: true } // This ensures that the updated document is returned
+    { new: true }
   )
-    .then(income => {
-      if (!income) {
-        res.status(404).json({ message: "Income not found" });
+    .then(expense => {
+      if (!expense) {
+        res.status(404).json({ message: "Expense not found" });
       } else {
-        res.status(200).json(income);
+        res.status(200).json(expense);
       }
     })
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
-// DELETE /income/:id: Delete a specific income entry
 router.delete('/:id', isAuthenticated, (req, res, next) => {
-  Income.findOneAndDelete({ _id: req.params.id, userId: req.payload._id })
-    .then(income => {
-      if (!income) {
-        res.status(404).json({ message: "Income not found" });
+  Expense.findOneAndDelete({ _id: req.params.id, userId: req.payload._id })
+    .then(expense => {
+      if (!expense) {
+        res.status(404).json({ message: "Expense not found" });
       } else {
-        res.status(204).json(); 
+        res.status(204).json();
       }
     })
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));

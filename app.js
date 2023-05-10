@@ -16,9 +16,23 @@ require("./config")(app);
 
 // 👇 Start handling routes here
 const indexRoutes = require("./routes/index.routes");
-app.use("/api", indexRoutes);
+app.use("/", indexRoutes);
+
+const authRoutes = require("./routes/auth.routes");
+app.use("/auth", authRoutes);
+
+const incomeRoutes = require("./routes/income.routes");
+app.use("/income", incomeRoutes);
+
+const expenseRoutes = require("./routes/expense.routes");
+app.use("/expense", expenseRoutes);
+
+const categoryRoutes = require("./routes/category.routes");
+app.use("/category", categoryRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
 
 module.exports = app;
+
+
