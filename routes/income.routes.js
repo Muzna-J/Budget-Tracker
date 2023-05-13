@@ -6,24 +6,36 @@ const Income = require("../models/Income.model");
 
 // GET /income: Get all income entries for the logged-in user
 router.get('/', isAuthenticated, (req, res, next) => {
-  Income.find({ userId: req.payload._id })
-    .then(incomes => res.status(200).json(incomes))
+  Income.find({ user: req.payload._id })
+    .then(incomes => {
+      if (incomes.length === 0) {
+        res.status(404).json({ message: "No income entries found for this user" });
+      } else {
+        res.status(200).json(incomes);
+      }
+    })
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
+
 
 // POST /income: Create a new income entry
 router.post('/', isAuthenticated, (req, res, next) => {
   const { category, amount, date, currency, description } = req.body;
-  const userId = req.payload._id;
-
-  Income.create({ category, amount, date, currency, description, userId })
+  const user = req.payload._id; // Changed this line
+  console.log(req.body);
+  console.log(user);
+  Income.create({ category, amount, date, currency, description, user }) // Changed this line
     .then(income => res.status(201).json(income))
-    .catch(err => res.status(500).json({ message: "Internal Server Error" }));
+    .catch(err => {
+      console.error(err); // log the error
+      res.status(500).json({ message: "Internal Server Error" })
+    });
 });
+
 
 // GET /income/:id: Get a specific income entry
 router.get('/:id', isAuthenticated, (req, res, next) => {
-  Income.findOne({ _id: req.params.id, userId: req.payload._id })
+  Income.findOne({ _id: req.params.id, user: req.payload._id })
     .then(income => {
       if (!income) {
         res.status(404).json({ message: "Income not found" });
