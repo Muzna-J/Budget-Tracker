@@ -35,7 +35,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
   const { category, amount, date, currency, description } = req.body;
 
   Expense.findOneAndUpdate(
-    { _id: req.params.id, userId: req.payload._id },
+    { _id: req.params.id, user: req.payload._id },
     { category, amount, date, currency, description },
     { new: true }
   )
@@ -50,7 +50,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
 });
 
 router.delete('/:id', isAuthenticated, (req, res, next) => {
-  Expense.findOneAndDelete({ _id: req.params.id, userId: req.payload._id })
+  Expense.findOneAndDelete({ _id: req.params.id, user: req.payload._id })
     .then(expense => {
       if (!expense) {
         res.status(404).json({ message: "Expense not found" });

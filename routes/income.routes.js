@@ -51,7 +51,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
   const { category, amount, date, currency, description } = req.body;
 
   Income.findOneAndUpdate(
-    { _id: req.params.id, userId: req.payload._id },
+    { _id: req.params.id, user: req.payload._id },
     { category, amount, date, currency, description },
     { new: true } // This ensures that the updated document is returned
   )
@@ -67,7 +67,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
 
 // DELETE /income/:id: Delete a specific income entry
 router.delete('/:id', isAuthenticated, (req, res, next) => {
-  Income.findOneAndDelete({ _id: req.params.id, userId: req.payload._id })
+  Income.findOneAndDelete({ _id: req.params.id, user: req.payload._id })
     .then(income => {
       if (!income) {
         res.status(404).json({ message: "Income not found" });
