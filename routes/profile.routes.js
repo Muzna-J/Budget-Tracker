@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/User.model");
-
+const jwt = require('jsonwebtoken')
 const { isAuthenticated } = require('./../middleware/jwt.middleware.js');
 
 const router = express.Router();
@@ -23,12 +23,12 @@ router.get('/profile', isAuthenticated, (req, res, next) => {
   });
 
 // PUT  /profile  -  Update user profile
-router.put('/', isAuthenticated, (req, res, next) => {
+router.put('/', isAuthenticated, async (req, res, next) => {
   const { _id } = req.payload;
   const { email, name } = req.body;
 
-  User.findById(_id)
-    .then(user => {
+  try{
+    const user = await User.findById(_id);
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
@@ -36,13 +36,22 @@ router.put('/', isAuthenticated, (req, res, next) => {
       user.name = name;
       user.email = email;
 
-      return user.save();
-    })
-    .then(updatedUser => {
+      const payload = { _id, email, name };
+      const authToken = jwt.sign(
+        payload,
+        process.env.TOKEN_SECRET,
+        { algorithm: 'HS256', expiresIn: "6h" }
+      );
+
+      const updatedUser = await user.save();
+      
       updatedUser.password = undefined;
-      res.status(200).json(updatedUser);
-    })
-    .catch(err => res.status(500).json({ message: "Internal Server Error" }));
+      const responseObj = { authToken: authToken, user: updatedUser };
+      res.status(200).json(responseObj);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 module.exports = router;
