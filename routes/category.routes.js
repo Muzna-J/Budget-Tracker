@@ -6,22 +6,22 @@ const Category = require("../models/Category.model");
 
 
 router.get('/', isAuthenticated, (req, res, next) => {
-  Category.find({ userId: req.payload._id })
+  Category.find({ user: req.payload._id })
     .then(categories => res.status(200).json(categories))
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
 router.post('/', isAuthenticated, (req, res, next) => {
   const { name, type } = req.body;
-  const userId = req.payload._id;
+  const user = req.payload._id;
 
-  Category.create({ name, type, userId })
+  Category.create({ name, type, user })
     .then(category => res.status(201).json(category))
     .catch(err => res.status(500).json({ message: "Internal Server Error" }));
 });
 
 router.get('/:id', isAuthenticated, (req, res, next) => {
-  Category.findOne({ _id: req.params.id, userId: req.payload._id })
+  Category.findOne({ _id: req.params.id, user: req.payload._id })
     .then(category => {
       if (!category) {
         res.status(404).json({ message: "Category not found" });
@@ -36,7 +36,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
   const { name, type } = req.body;
 
   Category.findOneAndUpdate(
-    { _id: req.params.id, userId: req.payload._id },
+    { _id: req.params.id, user: req.payload._id },
     { name, type },
     { new: true }
   )
@@ -51,7 +51,7 @@ router.put('/:id', isAuthenticated, (req, res, next) => {
 });
 
 router.delete('/:id', isAuthenticated, (req, res, next) => {
-  Category.findOneAndDelete({ _id: req.params.id, userId: req.payload._id })
+  Category.findOneAndDelete({ _id: req.params.id, user: req.payload._id })
     .then(category => {
       if (!category) {
         res.status(404).json({ message: "Category not found" });
