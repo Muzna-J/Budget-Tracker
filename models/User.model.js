@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -21,13 +21,19 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Hashing the password before saving it to the database
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', function (next) {
   const user = this;
-  if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8);
+  if (!user.isModified('password')) {
+    return next();
   }
-  next();
+
+  bcrypt.hash(user.password, 10, function (err, hash) {
+    if (err) {
+      return next(err);
+    }
+    user.password = hash;
+    next();
+  });
 });
 
 const User = mongoose.model('User', userSchema);
