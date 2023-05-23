@@ -1,3 +1,4 @@
 [submodule "Frontend"]
 	path = Frontend
-	url = https://github.com/Muzna-J/budget-tracker-client.git
+	url = https://github.com/Muzna-J/budget-tracker-client
+	branch = main
