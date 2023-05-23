@@ -22,11 +22,6 @@ This is a budget tracking app built with the MERN stack (MongoDB, Express.js, Re
 - Chart.js: JavaScript charting library for creating interactive charts
 - Bootstrap: CSS framework for responsive design and styling
 
-## Prerequisites
-
-- Node.js (version X.X.X)
-- MongoDB (version X.X.X)
-
 ## Repositories
 
 - Backend Repository: [budget-tracker-server](https://github.com/Muzna-J/budget-tracker-server)
