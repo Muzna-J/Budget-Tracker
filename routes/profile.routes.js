@@ -6,7 +6,7 @@ const { isAuthenticated } = require('./../middleware/jwt.middleware.js');
 const router = express.Router();
 
 // GET  /auth/profile  -  Get user profile
-router.get('/profile', isAuthenticated, (req, res, next) => {
+router.get('/', isAuthenticated, (req, res, next) => {
     const { _id } = req.payload;
   
     User.findById(_id)
