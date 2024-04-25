@@ -5,90 +5,76 @@ const User = require("../models/User.model");
 
 const router = express.Router();
 
-router.post('/signup', (req, res, next) => {
-  const { email, password, name } = req.body;
+router.post('/signup', async (req, res) => {
+  const { name, email, password } = req.body;
 
-  if (email === '' || password === '' || name === '') {
-    res.status(400).json({ message: "Provide email, password, and name" });
-    return;
+  if (!name || !email || !password) {
+   return res.status(400).json({ message: "Please provide name, email, and password" });
   }
 
-  User.create({ email, password, name })
-    .then((createdUser) => {
-      const { email, name, _id } = createdUser;
-      const user = { email, name, _id };
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
-      res.status(201).json({ user });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ message: "Internal Server Error" });
-    });
-});
+  const user= await User.create({ name, email, password })
+  const { _id, name: userName, email: userEmail } = user;
 
-router.post('/login', (req, res, next) => {
+  res.status(201).json({ user: { _id, name: userName, email: userEmail } });
+   
+  } catch(error)  {
+      res.status(500).json({ message: error });
+    };
+  });
+  
+
+
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  if (email === '' || password === '') {
-    res.status(400).json({ message: "Provide email and password." });
-    return;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Please enter both email and password to login' });
   }
 
-  User.findOne({ email })
-    .then((foundUser) => {
-      if (!foundUser) {
-        res.status(401).json({ message: "User not found." });
-        return;
+  try {
+  const user = await User.findOne({ email })
+      if (!user) {
+        return res.status(401).json({ message: "User not found." });
       }
 
-      bcrypt.compare(password, foundUser.password, function (err, result) {
-        if (err) {
+      const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
           console.log(err);
-          res.status(500).json({ message: "Internal Server Error" });
-          return;
+          return res.status(401).json({ message: "Invalid email or password" });
         }
-        
-        if (result) {
-          const { _id, email, name } = foundUser;
 
-          const payload = { _id, email, name };
+          const payload = { _id: user._id, name: user.name, email: user.email };
 
           const authToken = jwt.sign(
             payload,
             process.env.TOKEN_SECRET,
             { algorithm: 'HS256', expiresIn: "6h" }
           );
-
           res.status(200).json({ authToken });
-        } else {
+        } catch(error) {
           res.status(401).json({ message: "Unable to authenticate the user" });
         }
       });
 
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ message: "Internal Server Error" });
-    });
-});
 
-router.get('/verify', (req, res, next) => {
+router.get('/verify', async(req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) return res.sendStatus(401); // if there isn't any token
-
-  jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
-    console.log(err);
-
-    if (err) return res.sendStatus(403);
-
+  if (!token) return res.status(401).json({ message: "No token provided" });
+  try {
+  const user = jwt.verify(token, process.env.TOKEN_SECRET);
     req.user = user;
-
-    console.log(`req.user`, req.user);
-
     res.json(user);  // returns the user's information stored in the token
+  } catch (error) {
+     res.status(403).json({ message: "Token is not valid" });
+  }
   });
-});
+
 
 module.exports = router;
